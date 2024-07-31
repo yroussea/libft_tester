@@ -1,0 +1,6 @@
+this file only exist for auto completion of shells
+
+use ./testeur.sh {type} {mems} {strs} {...}
+
+use all the option of your chose
+[no option = all option]
