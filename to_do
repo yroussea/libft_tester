@@ -1,0 +1,11 @@
+do part1/2
+do bonus
+
+cating all_test in a log_file
+-> could make it possible to know what has segfault
+-> could make it possible to know what doesn't do what its suppose to do
+
+
+./log segfault
+./log error (fcnt) (fcnt2)
+
