@@ -32,6 +32,9 @@
 # define COLOR_WHITE	"\033[1;37m"
 
 
+extern int	fd_log;
+void	print_succes(int bool, int *incr);
+
 void	print(int expected, int wtf, char *name);
 int		sign(int x);
 

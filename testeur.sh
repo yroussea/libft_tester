@@ -41,3 +41,11 @@ fi
 echo "!!leaks aren't check; A tester should not dictate the defense"
 
 make LIBFT_DIR="$lib" ALL_FLAG="$arg" -s -C srcs cc && ./srcs/libft_testeur
+
+if [ "$?" = "0" ]
+then
+	echo "./show_log.sh {fcnt} {fcnt} {...} to show what test failed"
+else
+	echo "segfault:"
+	./show_log.sh
+fi

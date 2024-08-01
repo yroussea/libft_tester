@@ -9,13 +9,13 @@ int	sign(int x) {
 }
 void	print(int expected, int wtf, char *name) {
 	if (!expected  && !wtf) {
-		printf("%s%s", COLOR_BLUE, name);
+		printf("%s%s {%d|%d}", COLOR_BLUE, name, expected, wtf);
 	}
 	else if (!expected) {
-		printf("%s%s", COLOR_YELLOW, name);
+		printf("%s%s {%d|%d}", COLOR_YELLOW, name, expected, wtf);
 	}
 	else
-		printf("%s%s", COLOR_RED, name);
+		printf("%s%s {%d|%d}", COLOR_RED, name, expected, wtf);
 	printf("%s\n", COLOR_RESET);
 
 }
@@ -25,12 +25,14 @@ void	type_fcnt(int f(int), int ref(int), char *name) {
 	int	wtf = 0;
 
 	for (int k = -1000; k < 1000; k++) {
+		dprintf(fd_log, "%s(%d) ", name, k);
 		if (!!f(k) != !!ref(k)) {
 			if (k < 0 || k > 256 )
-				wtf++;
+				print_succes(1, &wtf);
 			else
-				expected++;
+				print_succes(1, &expected);
 		}
+		print_succes(0, &expected);
 	}
 	print(expected, wtf, name);
 }
