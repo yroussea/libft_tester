@@ -1,46 +1,64 @@
 #include <malloc.h>
+#include <string.h>
 #include <testeur.h>
+#include <tqdm.h>
+#include <unistd.h>
 
-char	*onlyalpha(char *buf) {
-	while (*buf)
+extern t_tqdm *tqdm;
+extern int		fd_random;
+
+#define ABS(x) x > 0 ? x : -x
+
+char	*onlyalpha(char *buf, size_t len) {
+	while (--len > 0)
 	{
-		*buf = (*buf + 256) % 93 + 32;
+		*buf = (ABS(*buf)) % 93 + 32;
 		buf++;
 	}
 	return (buf);
 }
 
+char	*random_strs(char *buf, size_t max_size)
+{
+	int		r = 1;
+boucle:
+	r = read(fd_random, buf, max_size);
+	if (r <= 1) {
+		max_size = 10;
+		goto boucle;
+	}
+	buf[r] = 0;
+	onlyalpha(buf, max_size);
+	return (buf);
+}
+
+
 void	_strlen(size_t f(const char *), size_t ref(const char *), char *name) {
+	_init_(tqdm, 0, 1002, ft_strdup(name));
+
 	int		expected = 0;
 	int		tmp;
-	int		wtf = 0;
 
-	int		r = 1;
 	int		fd = open("/dev/urandom", 0);
 	int		size = 10;
 	char	buf[267];
 	int		nb = 1000;
 	while (fd && nb) {
-		r = read(fd, buf, size);
-		if (!r) {
-			size = 10; continue ;
-		}
+		random_strs(buf, size);
 		nb--;
-		buf[r] = 0;
 		size = (*buf + 256) % 256;
-		onlyalpha(buf);
-		dprintf(fd_log, "strlen(%s) ", buf);
+		_incr(tqdm);dprintf(fd_log, "strlen(%s) ", buf);
 		tmp = f(buf) != ref(buf);
 		print_succes(tmp, &expected);
 	}
 	if (close(fd) == -1) {
 		printf("something fail, you should relunch the testeur\n"); exit(1);
 	}
-	dprintf(fd_log, "strlen(%s) ", "\"\"");
+	_incr(tqdm);dprintf(fd_log, "strlen(%s) ", "\"\"");
 	tmp = f("") != ref("");
 	print_succes(tmp, &expected);
 	int		status = 0;
-	dprintf(fd_log, "strlen(%s) ", "NULL");
+	_incr(tqdm);dprintf(fd_log, "strlen(%s) ", "NULL");
 	int		pid = fork();
 	if (pid == -1)  {
 		printf("something fail, you should relunch the testeur\n"); exit(1);
@@ -51,8 +69,7 @@ void	_strlen(size_t f(const char *), size_t ref(const char *), char *name) {
 	}
 	waitpid(pid, &status, 0);
 	tmp = status == 0;
-	print_succes(tmp, &wtf);
-	print(expected, wtf, name);
+	print_succes(tmp, &expected);
 }
 
 int	child_strl(size_t f(char *, const char *, unsigned long), char *a, const char *b, unsigned long c) {
@@ -72,8 +89,8 @@ int	child_strl(size_t f(char *, const char *, unsigned long), char *a, const cha
 }
 
 void	_strlcpy(size_t f(char *, const char *, unsigned long), size_t ref(char *, const char *, unsigned long), char *name) {
+	_init_(tqdm, 0, 9, ft_strdup(name));
 	int	expected = 0;
-	int	wtf = 0;
 	int	tmp;
 	char	src[100] = {0};
 	char	A[100] = {0};
@@ -82,45 +99,44 @@ void	_strlcpy(size_t f(char *, const char *, unsigned long), size_t ref(char *, 
 	src[1]='y'; src[4]='4';
 	memset(A, 'a', 99);
 	memset(B, 'a', 99);
-	dprintf(fd_log, "strlcpy(%s, %s, %d) ", A, src, 0);
+	_incr(tqdm);dprintf(fd_log, "strlcpy(%s, %s, %d) ", A, src, 0);
 	tmp = f(A, src, 0) != ref(B, src, 0);
 	tmp += !!memcmp(A, B, 100);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strlcpy(%s, %s, %d) ", A, src, 1);
+	_incr(tqdm);dprintf(fd_log, "strlcpy(%s, %s, %d) ", A, src, 1);
 	tmp = f(A, src, 1) != ref(B, src, 1);
 	tmp += !!memcmp(A, B, 100);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strlcpy(%s, %s, %d) ", A, src, -1);
+	_incr(tqdm);dprintf(fd_log, "strlcpy(%s, %s, %d) ", A, src, -1);
 	tmp = f(A, src, -1) != ref(B, src, -1);
 	tmp += !!memcmp(A, B, 100);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strlcpy(%s, %s, %d) ", A, src, 5);
+	_incr(tqdm);dprintf(fd_log, "strlcpy(%s, %s, %d) ", A, src, 5);
 	tmp = f(A, src, 5) != ref(B, src, 5);
 	tmp += !!memcmp(A, B, 100);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strlcpy(%s, %s, %d) ", A, src, 102);
+	_incr(tqdm);dprintf(fd_log, "strlcpy(%s, %s, %d) ", A, src, 102);
 	tmp = f(A, src, 102) != ref(B, src, 102);
 	tmp += !!memcmp(A, B, 100);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strlcpy(%s, %s, %d) ", A, src, 10);
+	_incr(tqdm);dprintf(fd_log, "strlcpy(%s, %s, %d) ", A, src, 10);
 	tmp = f(A, "", 10) != ref(B, "", 10);
 	tmp += !!memcmp(A, B, 100);
 	print_succes(tmp, &expected);
 	memset(A, 'a', 99);
-	dprintf(fd_log, "strlcpy(%s, %s, %d) ", "NULL", src, 10);
+	_incr(tqdm);dprintf(fd_log, "strlcpy(%s, %s, %d) ", "NULL", src, 10);
 	tmp = child_strl(f, NULL, B, 10) != child_strl(ref, NULL, B, 10);
-	print_succes(tmp, &wtf);
-	dprintf(fd_log, "strlcpy(%s, %s, %d) ", A, "NULL", 10);
+	print_succes(tmp, &expected);
+	_incr(tqdm);dprintf(fd_log, "strlcpy(%s, %s, %d) ", A, "NULL", 10);
 	tmp = child_strl(f, A, NULL, 10) != child_strl(ref, A, NULL, 10);
-	print_succes(tmp, &wtf);
-	dprintf(fd_log, "strlcpy(%s, %s, %d) ", "NULL", "NULL", 10);
+	print_succes(tmp, &expected);
+	_incr(tqdm);dprintf(fd_log, "strlcpy(%s, %s, %d) ", "NULL", "NULL", 10);
 	tmp = child_strl(f, NULL, NULL, 10) != child_strl(ref, NULL, NULL, 10);
-	print_succes(tmp, &wtf);
-	print(expected, wtf, name);
+	print_succes(tmp, &expected);
 }
 void	_strlcat(size_t f(char *, const char *, unsigned long), size_t ref(char *, const char *, unsigned long), char *name) {
 	int	expected = 0;
-	int	wtf = 0;
+	_init_(tqdm, 0, 15, ft_strdup(name));
 	int	tmp;
 	char	src[100] = {0};
 	char	A[100] = {0};
@@ -129,13 +145,13 @@ void	_strlcat(size_t f(char *, const char *, unsigned long), size_t ref(char *, 
 	src[1]='y'; src[4]='4';
 	memset(A, 'a', 99);
 	memset(B, 'a', 99);
-	dprintf(fd_log, "strlcat(%s, %s, %d) ", A, src, 0);
+	_incr(tqdm);dprintf(fd_log, "strlcat(%s, %s, %d) ", A, src, 0);
 	tmp = f(A, src, 0) != ref(B, src, 0);
 	tmp += memcmp(A, B, 100);
 	print_succes(tmp, &expected);
 	for (int k = 0; k < 10; k++) {
 		memset(src, 'c' + 1, 99);
-		dprintf(fd_log, "strlcat(%s, %s, %d) ", A, src, k + 1);
+		_incr(tqdm);dprintf(fd_log, "strlcat(%s, %s, %d) ", A, src, k + 1);
 		tmp = f(A, src, k + 1) != ref(B, src, k + 1);
 		tmp += memcmp(A, B, 100);
 		print_succes(tmp, &expected);
@@ -144,20 +160,19 @@ void	_strlcat(size_t f(char *, const char *, unsigned long), size_t ref(char *, 
 		}
 	}
 	memset(A, 0, 100); memset(B, 0, 100);
-	dprintf(fd_log, "strlcat(%s, %s, %d) ", A, src, -1);
+	_incr(tqdm);dprintf(fd_log, "strlcat(%s, %s, %d) ", A, src, -1);
 	tmp = f(A, src, -1) != ref(B, src, -1);
 	tmp += memcmp(A, B, 100);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strlcat(%s, %s, %d) ", "NULL", src, 10);
+	_incr(tqdm);dprintf(fd_log, "strlcat(%s, %s, %d) ", "NULL", src, 10);
 	tmp = child_strl(f, NULL, src, 10) != child_strl(ref, NULL, src, 10);
-	print_succes(tmp, &wtf);
-	dprintf(fd_log, "strlcat(%s, %s, %d) ", A, "NULL", 10);
+	print_succes(tmp, &expected);
+	_incr(tqdm);dprintf(fd_log, "strlcat(%s, %s, %d) ", A, "NULL", 10);
 	tmp = child_strl(f, A, NULL, 10) != child_strl(ref, B, NULL, 10);
-	print_succes(tmp, &wtf);
-	dprintf(fd_log, "strlcat(%s, %s, %d) ", "NULL", "NULL", 10);
+	print_succes(tmp, &expected);
+	_incr(tqdm);dprintf(fd_log, "strlcat(%s, %s, %d) ", "NULL", "NULL", 10);
 	tmp = child_strl(f, NULL, NULL, 10) != child_strl(ref, NULL, NULL, 10);
-	print_succes(tmp, &wtf);
-	print(expected, wtf, name);
+	print_succes(tmp, &expected);
 }
 
 int	child_strc(char *f(const char *, int), const char *a, int b) {
@@ -181,79 +196,77 @@ int	child_strc(char *f(const char *, int), const char *a, int b) {
 
 void	_strchr(char *f(const char *, int), char *ref(const char *, int), char *name) {
 	int	expected = 0;
-	int	wtf = 0;
+	_init_(tqdm, 0, 10, ft_strdup(name));
 	int	tmp;
 	char	src[48] = "https://youtube/jNQXAC9IVRw?si=-rwLNaR0KHMpezcF";
 
-	dprintf(fd_log, "strchr(%s, %d) ", src, 0);
+	_incr(tqdm);dprintf(fd_log, "strchr(%s, %d) ", src, 0);
 	tmp = f(src, 0) != ref(src, 0);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strchr(%s, %d) ", src, 'h');
+	_incr(tqdm);dprintf(fd_log, "strchr(%s, %d) ", src, 'h');
 	tmp = f(src, 'h') != ref(src, 'h');
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strchr(%s, %d) ", src, 1);
+	_incr(tqdm);dprintf(fd_log, "strchr(%s, %d) ", src, 1);
 	tmp = f(src, 1) != ref(src, 1);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strchr(%s, %d) ", src, 'F');
+	_incr(tqdm);dprintf(fd_log, "strchr(%s, %d) ", src, 'F');
 	tmp = f(src, 'F') != ref(src, 'F');
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strchr(%s, %d) ", src + 25, 'N');
+	_incr(tqdm);dprintf(fd_log, "strchr(%s, %d) ", src + 25, 'N');
 	tmp = f(src + 25, 'N') != ref(src + 25, 'N');
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strchr(%s, %d) ", src, 'N');
+	_incr(tqdm);dprintf(fd_log, "strchr(%s, %d) ", src, 'N');
 	tmp = f(src, 'N') != ref(src, 'N');
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strchr(%s, %d) ", src, 't' + 256 * 6);
+	_incr(tqdm);dprintf(fd_log, "strchr(%s, %d) ", src, 't' + 256 * 6);
 	tmp = f(src, 't' + 256 * 6) != ref(src, 't' + 256 * 6);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strchr(%s, %d) ", src, '/' - 256);
+	_incr(tqdm);dprintf(fd_log, "strchr(%s, %d) ", src, '/' - 256);
 	tmp = f(src, '/' - 256) != ref(src, '/' - 256);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strchr(%s, %d) ", "NULL", 0);
+	_incr(tqdm);dprintf(fd_log, "strchr(%s, %d) ", "NULL", 0);
 	tmp = child_strc(f, NULL, 0) != child_strc(ref, NULL, 0);
-	print_succes(tmp, &wtf);
-	dprintf(fd_log, "strchr(%s, %d) ", "NULL", 1);
+	print_succes(tmp, &expected);
+	_incr(tqdm);dprintf(fd_log, "strchr(%s, %d) ", "NULL", 1);
 	tmp = child_strc(f, NULL, 1) != child_strc(ref, NULL, 1);
-	print_succes(tmp, &wtf);
-	print(expected, wtf, name);
+	print_succes(tmp, &expected);
 }
 void	_strrchr(char *f(const char *, int), char *ref(const char *, int), char *name) {
 	int	expected = 0;
-	int	wtf = 0;
+	_init_(tqdm, 0, 10, ft_strdup(name));
 	int	tmp;
 	char	src[41] = "https://fr.wikipedia.org/wiki/Bangladesh";
 
-	dprintf(fd_log, "strrchr(%s, %d) ", src, 0);
+	_incr(tqdm);dprintf(fd_log, "strrchr(%s, %d) ", src, 0);
 	tmp = f(src, 0) != ref(src, 0);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strrchr(%s, %d) ", src, 'h');
+	_incr(tqdm);dprintf(fd_log, "strrchr(%s, %d) ", src, 'h');
 	tmp = f(src, 'h') != ref(src, 'h');
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strrchr(%s, %d) ", src, 1);
+	_incr(tqdm);dprintf(fd_log, "strrchr(%s, %d) ", src, 1);
 	tmp = f(src, 1) != ref(src, 1);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strrchr(%s, %d) ", src, 'f');
+	_incr(tqdm);dprintf(fd_log, "strrchr(%s, %d) ", src, 'f');
 	tmp = f(src, 'f') != ref(src, 'f');
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strrchr(%s, %d) ", src, 'w');
+	_incr(tqdm);dprintf(fd_log, "strrchr(%s, %d) ", src, 'w');
 	tmp = f(src, 'w') != ref(src, 'w');
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strrchr(%s, %d) ", src + 25, 'w');
+	_incr(tqdm);dprintf(fd_log, "strrchr(%s, %d) ", src + 25, 'w');
 	tmp = f(src + 25, 'w') != ref(src + 25, 'w');
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strrchr(%s, %d) ", src, 't' + 256 * 6);
+	_incr(tqdm);dprintf(fd_log, "strrchr(%s, %d) ", src, 't' + 256 * 6);
 	tmp = f(src, 't' + 256 * 6) != ref(src, 't' + 256 * 6);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strrchr(%s, %d) ", src, '/' - 256);
+	_incr(tqdm);dprintf(fd_log, "strrchr(%s, %d) ", src, '/' - 256);
 	tmp = f(src, '/' - 256) != ref(src, '/' - 256);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strrchr(%s, %d) ", "NULL", 0);
+	_incr(tqdm);dprintf(fd_log, "strrchr(%s, %d) ", "NULL", 0);
 	tmp = child_strc(f, NULL, 0) != child_strc(ref, NULL, 0);
-	print_succes(tmp, &wtf);
-	dprintf(fd_log, "strrchr(%s, %d) ", "NULL", 1);
+	print_succes(tmp, &expected);
+	_incr(tqdm);dprintf(fd_log, "strrchr(%s, %d) ", "NULL", 1);
 	tmp = child_strc(f, NULL, 1) != child_strc(ref, NULL, 1);
-	print_succes(tmp, &wtf);
-	print(expected, wtf, name);
+	print_succes(tmp, &expected);
 }
 
 int	child_strcmp(int f(const char *, const char *, size_t), const char *a, const char *b, int c, int *seg) {
@@ -274,76 +287,76 @@ int	child_strcmp(int f(const char *, const char *, size_t), const char *a, const
 }
 void	_strncmp(int f(const char *, const char *, size_t), int ref(const char *, const char *, size_t), char *name) {
 	int	expected = 0;
-	int	wtf = 0;
+	_init_(tqdm, 0, 391, ft_strdup(name));
 	int	tmp;
 	char	A[100] = "nodiff";
 	char	B[100] = "nodiffexeptthereis";
 	for (int k = 0; k < 10; k++) {
 		if (k % 2)  {
-			dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", A, B, k);
+			_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", A, B, k);
 			tmp = sign(f(A, B, k)) != sign(ref(A, B, k));
 			print_succes(tmp, &expected);
-			dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", A, B, k);
+			_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", A, B, k);
 			tmp = f(A, B, k) != ref(A, B, k);
-			print_succes(tmp, &wtf);
+			print_succes(tmp, &expected);
 		}
 		else {
-			dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", B, A, k);
+			_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", B, A, k);
 			tmp = sign(f(B, A, k)) != sign(ref(B, A, k));
 			print_succes(tmp, &expected);
-			dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", B, A, k);
+			_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", B, A, k);
 			tmp = f(B, A, k) != ref(B, A, k);
-			print_succes(tmp, &wtf);
+			print_succes(tmp, &expected);
 		}
 	}
 	char	C[183] = "Une brouette est un contenant mobile, porté sur une ou plusieurs roues, muni de deux brancards pour le transport humain de petites charges, généralement sur de courtes distances.";
 	char	D[182] = "Une brouette est un contenant mobile, porté sur une ou plusieurs roues, muni de deux brancards pour le transport humain de petites charges, généralement sur de courtes distances.";
 	for (int k = 0; k < 181; k++) {
 		if (k % 10)  {
-			dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", C, D, k);
+			_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", C, D, k);
 			tmp = sign(f(C, D, k)) != sign(ref(C, D, k));
 			print_succes(tmp, &expected);
-			dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", C, D, k);
+			_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", C, D, k);
 			tmp = f(C, D, k) != ref(C, D, k);
-			print_succes(tmp, &wtf);
+			print_succes(tmp, &expected);
 		}
 		else {
-			dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", B, D + k / 2, k);
+			_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", B, D + k / 2, k);
 			tmp = sign(f(B, D + k / 2, k)) != sign(ref(B, D + k / 2, k));
 			print_succes(tmp, &expected);
-			dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", B, D + k / 2, k);
+			_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", B, D + k / 2, k);
 			tmp = f(B, D + k / 2, k) != ref(B, D+ k / 2, k);
-			print_succes(tmp, &wtf);
+			print_succes(tmp, &expected);
 		}
 	}
-	dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", "\"\"", "Y", 1);
+	_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", "\"\"", "Y", 1);
 	tmp = sign(f("", "Y", 1)) != sign(ref("", "Y", 1));
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", "\"\"", "Y", 1);
+	_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", "\"\"", "Y", 1);
 	tmp = f("", "Y", 1) != ref("", "Y", 1);
-	print_succes(tmp, &wtf);
-	dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", "\"\"", "Y", 0);
+	print_succes(tmp, &expected);
+	_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", "\"\"", "Y", 0);
 	tmp = sign(f("", "Y", 0)) != sign(ref("", "Y", 0));
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", "\"\"", "Y", 0);
+	_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", "\"\"", "Y", 0);
 	tmp = f("", "Y", 0) != ref("", "Y", 0);
-	print_succes(tmp, &wtf);
-	dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", "\"\"", "\"\"", 0);
+	print_succes(tmp, &expected);
+	_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", "\"\"", "\"\"", 0);
 	tmp = sign(f("", "", 0)) != sign(ref("", "", 0));
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", "\"\"", "\"\"", 0);
+	_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", "\"\"", "\"\"", 0);
 	tmp = f("", "", 0) != ref("", "", 0);
-	print_succes(tmp, &wtf);
-	dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", "\"\"", "\"\"", 1);
+	print_succes(tmp, &expected);
+	_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (bool value)", "\"\"", "\"\"", 1);
 	tmp = sign(f("", "", 1)) != sign(ref("", "", 1));
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", "\"\"", "\"\"", 1);
+	_incr(tqdm);dprintf(fd_log, "strncmp(%s, %s, %d) (int value)", "\"\"", "\"\"", 1);
 	tmp = f("", "", 1) != ref("", "", 1);
-	print_succes(tmp, &wtf);
+	print_succes(tmp, &expected);
 	
 	int	seg = 0;int	ret = 0;int	seg2 = 0;int ret2 = 0;
 	tmp = 0;
-	dprintf(fd_log, "strncmp(A NULL value, 5)");
+	_incr(tqdm);dprintf(fd_log, "strncmp(A NULL value, 5)");
 	ret = child_strcmp(f, NULL, A, 5, &seg);
 	ret2 = child_strcmp(ref, NULL, A, 5, &seg2);
 	if (seg ^ seg2)
@@ -362,8 +375,7 @@ void	_strncmp(int f(const char *, const char *, size_t), int ref(const char *, c
 		tmp++;
 	else
 		expected += ret != ret2;
-	print_succes(tmp, &wtf);
-	print(expected, wtf, name);
+	print_succes(tmp, &expected);
 }
 int	child_strstr(char *f(const char *, const char *, size_t), const char *a, const char *b, int c) {
 	int		status = 0;
@@ -386,7 +398,7 @@ int	child_strstr(char *f(const char *, const char *, size_t), const char *a, con
 }
 void	_strnstr(char *f(const char *, const char *, size_t), char *ref(const char *, const char *, size_t), char *name) {
 	int	expected = 0;
-	int	wtf = 0;
+	_init_(tqdm, 0, 203, ft_strdup(name));
 	int	tmp = 0;
 
 	char	A[100] = "aabaabaabcaab";
@@ -396,68 +408,113 @@ void	_strnstr(char *f(const char *, const char *, size_t), char *ref(const char 
 	char	E[100] = "aabcaab";
 	char	F[100] = "aabcaaba";
 	for (int k = 0; k < 25; k++) {
-		dprintf(fd_log, "strnstr(%s, %s, %d)", A, B, k);
+		_incr(tqdm);dprintf(fd_log, "strnstr(%s, %s, %d)", A, B, k);
 		tmp = f(A, B, k) != ref(A, B, k);
 		print_succes(tmp, &expected);
-		dprintf(fd_log, "strnstr(%s, %s, %d)", A, C, k);
+		_incr(tqdm);dprintf(fd_log, "strnstr(%s, %s, %d)", A, C, k);
 		tmp = f(A, C, k) != ref(A, C, k);
 		print_succes(tmp, &expected);
-		dprintf(fd_log, "strnstr(%s, %s, %d)", A, D, k);
+		_incr(tqdm);dprintf(fd_log, "strnstr(%s, %s, %d)", A, D, k);
 		tmp = f(A, D, k) != ref(A, D, k);
 		print_succes(tmp, &expected);
-		dprintf(fd_log, "strnstr(%s, %s, %d)", A, E, k);
+		_incr(tqdm);dprintf(fd_log, "strnstr(%s, %s, %d)", A, E, k);
 		tmp = f(A, E, k) != ref(A, E, k);
 		print_succes(tmp, &expected);
-		dprintf(fd_log, "strnstr(%s, %s, %d)", A, F, k);
+		_incr(tqdm);dprintf(fd_log, "strnstr(%s, %s, %d)", A, F, k);
 		tmp = f(A, F, k) != ref(A, F, k);
 		print_succes(tmp, &expected);
-		dprintf(fd_log, "strnstr(%s, %s, %d)", "\"\"", F, k);
+		_incr(tqdm);dprintf(fd_log, "strnstr(%s, %s, %d)", "\"\"", F, k);
 		tmp = f("", F, k) != ref("", F, k);
 		print_succes(tmp, &expected);
-		dprintf(fd_log, "strnstr(%s, %s, %d)", F, "\"\"", k);
+		_incr(tqdm);dprintf(fd_log, "strnstr(%s, %s, %d)", F, "\"\"", k);
 		tmp = f(F, "", k) != ref(F, "", k);
 		print_succes(tmp, &expected);
-		dprintf(fd_log, "strnstr(%s, %s, %d)", "\"\"", "\"\"", k);
+		_incr(tqdm);dprintf(fd_log, "strnstr(%s, %s, %d)", "\"\"", "\"\"", k);
 		tmp = f("", "", k) != ref("", "", k);
 		print_succes(tmp, &expected);
 	}
-	dprintf(fd_log, "strnstr(%s, %s, %d)", "NULL", A, 5);
+	_incr(tqdm);dprintf(fd_log, "strnstr(%s, %s, %d)", "NULL", A, 5);
 	tmp = child_strstr(f, NULL, A, 5) != child_strstr(ref, NULL, A, 5);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strnstr(%s, %s, %d)", A, "NULL", 5);
+	_incr(tqdm);dprintf(fd_log, "strnstr(%s, %s, %d)", A, "NULL", 5);
 	tmp = child_strstr(f, A, NULL, 5) != child_strstr(ref, A, NULL, 5);
 	print_succes(tmp, &expected);
-	dprintf(fd_log, "strnstr(%s, %s, %d)", "NULL", "NULL", 5);
+	_incr(tqdm);dprintf(fd_log, "strnstr(%s, %s, %d)", "NULL", "NULL", 5);
 	tmp = child_strstr(f, NULL, NULL, 5) != child_strstr(ref, NULL, NULL, 5);
 	print_succes(tmp, &expected);
-	print(expected, wtf, name);
+}
+
+char	*child_strdup(char *f(const char *), const char *a, int *seg) {
+	int		status = 0;
+	if (f != strdup)
+		dprintf(fd_log, "strdup(%s) ", a);
+	int		pid = fork();
+	if (pid == -1)  {
+		printf("something fail, you should relunch the testeur\n"); exit(1);
+	}
+	if (!pid) {
+		f(a);
+		exit(0);
+	}
+	waitpid(pid, &status, 0);
+	if (seg)
+		*seg = status != 0;
+	if (!status) {
+		return (f(a));
+	}
+	return (NULL);
+}
+void	test_strdup(char *f(const char *), char *ref(const char *),
+		char *A, int *expected) {
+	char	*f_res; char	*ref_res;
+	int seg=0;int seg2=0;
+	_incr(tqdm);
+	f_res = child_strdup(f, A, &seg);
+	ref_res = child_strdup(ref, A, &seg2);
+	if (seg ^ seg2)
+		print_succes(1, expected);
+	else if (!ref_res || !f_res) {
+		print_succes(ref_res || f_res, expected);
+	}
+	else if (ref_res && f_res)
+		print_succes(!!memcmp(f_res, ref_res, strlen(ref_res)), expected);
+	_incr(tqdm);dprintf(fd_log, "strdup(%s) (mem usage) ", A);
+	print_succes(malloc_usable_size(f_res) != malloc_usable_size(ref_res), expected);
+	free(f_res); free(ref_res);
 }
 
 void	_strdup(char *f(const char *), char *ref(const char *), char *name) {
 	int	expected = 0;
-	int	wtf = 0;
-	char	A[100] = "aabaabaabcaab";
-	char	*f_res; char	*ref_res;
-	f_res = f(A); ref_res = ref(A);
-	if (!f_res ^ !ref_res)
-		expected ++;
-	else
-		expected += !!strcmp(f_res, ref_res);
-	wtf += malloc_usable_size(f_res) != malloc_usable_size(ref_res);
-	free(f_res); free(ref_res);
-	// no wtf yet
-	// si oublie de 0
-	(void)f;(void)ref;
-	print(expected, wtf, name);
+	_init_(tqdm, 0, 2010, ft_strdup(name));
+
+	int	nb = 1000;
+	char	buf[256];
+	int	size = 126;
+	while (nb--) {
+		random_strs(buf, size);
+		size = (*buf + 256) % 256;
+		test_strdup(f, ref, buf, &expected);
+	}
+	test_strdup(f, ref, "XD", &expected);
+	test_strdup(f, ref, "azertyuiopqsdfghjklmwxcvbn", &expected);
+	test_strdup(f, ref, NULL, &expected);
+	char	*x = malloc(sizeof(char) * 10);
+	if (x) {
+		memset(x, 'a', 10); x[9] = 0;
+		x[5] = 0;
+		test_strdup(f, ref, x, &expected);
+		x[5] = 127;
+		test_strdup(f, ref, x, &expected);
+	}
 }
 
 void	strs() {
-	printf("%sstrs fcnt:\n", COLOR_CYAN);
-	_strncmp(ft_strncmp, strncmp, "\tstrncmp");
-	_strlen(ft_strlen, strlen, "\tstrlen");
-	_strlcpy(ft_strlcpy, strlcpy, "\tstrlcpy");
-	_strchr(ft_strchr, strchr, "\tstrchr");
-	_strrchr(ft_strrchr, strrchr, "\tstrrchr");
-	_strlcat(ft_strlcat, strlcat, "\tstrlcat");
-	_strnstr(ft_strnstr, strnstr, "\tstrnstr");
+	_strlen(ft_strlen, strlen, "strlen");
+	_strncmp(ft_strncmp, strncmp, "strncmp");
+	_strlcpy(ft_strlcpy, strlcpy, "strlcpy");
+	_strchr(ft_strchr, strchr, "strchr");
+	_strrchr(ft_strrchr, strrchr, "strrchr");
+	_strlcat(ft_strlcat, strlcat, "strlcat");
+	_strnstr(ft_strnstr, strnstr, "strnstr");
+	_strdup(ft_strdup, strdup, "strdup");
 }

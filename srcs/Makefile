@@ -12,7 +12,7 @@ COMPIL = $(CLANG)
 ALL_FLAG =
 CC = $(COMPIL) $(ALL_FLAG)
 
-CFLAGS = -Wall -Werror -Wextra $(INCL_DIR)
+CFLAGS = $(INCL_DIR)
 CLANG = $(SILENT)clang $(CFLAGS)
 GCC = $(SILENT)gcc $(CFLAGS)
 
@@ -25,6 +25,7 @@ SRCS_FILES = 			\
 	types.c				\
 	_str.c				\
 	_mem.c				\
+	tqdm.c				\
 	main.c
 
 SRCS = 	$(addprefix $(SRCS_DIR)/, $(SRCS_FILES))
@@ -56,7 +57,7 @@ all: $(NAME)
 
 $(NAME): $(OBJS) | $(OBJS_DIR)
 	@make -s -j -C $(LIBFT_DIR)
-	$(CC) $^ -o $@ $(INCLUDE_LIBFT) -lbsd
+	$(CC) $^ -o $@ $(INCLUDE_LIBFT) -lbsd -lm
 	$(DELET_LINE)
 	$(PRINT) $(MSG_READY)
 

@@ -1,6 +1,7 @@
 #ifndef TESTEUR_H
 # define TESTEUR_H
 
+#include "tqdm.h"
 # ifdef ALL
 #  define TYPE
 #  define STRS
@@ -33,7 +34,7 @@
 
 
 extern int	fd_log;
-void	print_succes(int bool, int *incr);
+void	print_succes(int bol, int *incr);
 
 void	print(int expected, int wtf, char *name);
 int		sign(int x);
@@ -41,5 +42,7 @@ int		sign(int x);
 void	types();
 void	strs();
 void	mems();
+
+extern t_tqdm	*tqdm;
 
 #endif
