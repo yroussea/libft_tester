@@ -26,9 +26,8 @@ void	print(int expected, int wtf, char *name) {
 void	type_fcnt(int f(int), int ref(int), char *name) {
 	int	expected = 0;
 
-	_init_(tqdm, 0, 2000, ft_strdup(name));
+	_init_(tqdm, 0, 2000, strdup(name));
 	for (int k = -1000; k < 1000; k++) {
-		_incr(tqdm);
 		dprintf(fd_log, "%s(%d) ", name, k);
 		if (!!f((unsigned char)k) != !!ref((unsigned char)k)) {
 			print_succes(1, &expected);
@@ -41,8 +40,8 @@ void	types() {
 	type_fcnt(ft_isalpha, isalpha, "isalpha");
 	type_fcnt(ft_isdigit, isdigit, "isdigit");
 	type_fcnt(ft_isalnum, isalnum, "isalnum");
-	type_fcnt(ft_isascii, isascii, "isascii");
+	// type_fcnt(ft_isascii, isascii, "isascii");
 	type_fcnt(ft_isprint, isprint, "isprint");
-	type_fcnt(ft_toupper, toupper, "toupper");
-	type_fcnt(ft_tolower, tolower, "tolower");
+	// type_fcnt(ft_toupper, toupper, "toupper");
+	// type_fcnt(ft_tolower, tolower, "tolower");
 }

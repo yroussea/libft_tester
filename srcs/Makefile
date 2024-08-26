@@ -9,7 +9,7 @@ INCL_DIR = -I include  -I $(LIBFT_DIR)
 SRCS_DIR = src
 
 COMPIL = $(CLANG)
-ALL_FLAG =
+ALL_FLAG = -g
 CC = $(COMPIL) $(ALL_FLAG)
 
 CFLAGS = $(INCL_DIR)

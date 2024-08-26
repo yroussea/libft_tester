@@ -7,6 +7,7 @@ int	fd_log = -1;
 int	fd_random = -1;
 t_tqdm *tqdm = NULL;
 void	print_succes(int bol, int *incr) {
+	_incr(tqdm);
 	if (bol)
 		dprintf(fd_log, "error\n");
 	else
@@ -34,6 +35,7 @@ int	child_atoi(int f(const char *), const char *a) {
 }
 
 void	_atoi(int f(const char *), int ref(const char *)) {
+	_init_(tqdm, 0, 543, strdup("atoi"));
 	int	expected = 0;
 	int	tmp;
 	const char *wsp[6] = {" \t", "\n ", "\v\f", "\f\t", "   ", ""};
@@ -45,7 +47,6 @@ void	_atoi(int f(const char *), int ref(const char *)) {
 	char		it[25];
 
 	for (int k = 0; k < 462; k++) {
-		_incr(tqdm);
 		bzero(arg, 100);bzero(printable, 100);
 		strlcat(arg, wsp[k % 6], 100);strlcat(printable, p_wsp[k % 6], 100);
 		strlcat(arg, sg[k % 7], 100);strlcat(printable, sg[k % 7], 100);
@@ -55,14 +56,12 @@ void	_atoi(int f(const char *), int ref(const char *)) {
 		print_succes(tmp, &expected);
 	}
 	for (int k = 0; k < 60; k++) {
-		_incr(tqdm);
 		sprintf(it, "%ld", (uint64_t)1 << k);
 		dprintf(fd_log, "atoi(%s) ", it);
 		tmp =  f(it) != ref(it);
 		print_succes(tmp, &expected);
 	}
 	for (int k = 0; k < 10; k++) {
-		_incr(tqdm);
 		char xd[21] = "9223372036854775800";
 		xd[18] = '0' + k;
 		dprintf(fd_log, "atoi(%s) ", xd);
@@ -70,7 +69,6 @@ void	_atoi(int f(const char *), int ref(const char *)) {
 		print_succes(tmp, &expected);
 	}
 	for (int k = 0; k < 10; k++) {
-		_incr(tqdm);
 		char xd[22] = "-9223372036854775800";
 		xd[19] = '0' + k;
 		dprintf(fd_log, "atoi(%s) ", xd);
@@ -89,7 +87,6 @@ int	main() {
 	fd_random = open("/dev/urandom", 0);
 	tqdm = Tqdm();
 #ifdef TYPE
-	_init_(tqdm, 0, 543, ft_strdup("atoi"));
 	_atoi(ft_atoi, atoi);
 	types();
 #endif

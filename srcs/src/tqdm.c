@@ -17,6 +17,7 @@ void	_init_(t_tqdm *X, int i, int max, char *actual) {
 }
 
 void	kill_tqdm(t_tqdm *tqdm) {
+	while (_status(tqdm, GET, GET) != INIT) {usleep(100);}
 	_status(tqdm, SET, FINISH);
 	pthread_join(tqdm->tr, NULL);
 	free(tqdm->mu);
@@ -84,6 +85,7 @@ void	*routine(void *X) {
 				break ;
 			
 			case MAX:
+				tqdm_print(data->error, data->i, max, data->actual);
 				write(1, "\n", 1);
 				data->status = INIT;
 				break ;

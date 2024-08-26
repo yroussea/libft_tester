@@ -8,9 +8,9 @@ done
 
 if [ "$#" = "0" ];
 then
-	cat srcs/log | grep -v ok | grep -v error
+	cat srcs/log | grep -av ok | grep -av error
 else
-	cat srcs/log | grep error | grep $arg
+	cat srcs/log | grep -a error | grep -a $arg
 fi
 
 
