@@ -11,8 +11,7 @@ AND name your libft directory "libft"
 [part1 as type: mems / strs / type]
 
 red means your fcnt doesn't do the job,  
-yellow means it does the job but sometimes not like it's suppose to do,  
-blue means your file
+blue means your fine
 
 ## to see what test you didn't pass
 ./show_log.sh {fcnt} {fcnt} {...}  
